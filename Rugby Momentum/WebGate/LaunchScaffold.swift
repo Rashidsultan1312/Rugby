@@ -1,38 +1,23 @@
 import SwiftUI
 
 struct LaunchScaffold<Inner: View>: View {
-    @AppStorage("gate.consentSealed") private var consentSealed = false
     @State private var phase: Phase = .preparing
-    @State private var showPledge = false
     @ViewBuilder var inner: () -> Inner
 
     var body: some View {
         Group {
-            if consentSealed {
-                inner()
-            } else {
-                switch phase {
-                case .preparing:
-                    ZStack {
-                        Color(.systemBackground).ignoresSafeArea()
-                        ProgressView().scaleEffect(1.4)
-                    }
-                    .task { await calibrate() }
-                case .shifted(let url):
-                    GateFrame(target: url, sterile: false)
-                        .ignoresSafeArea()
-                case .pledging:
+            switch phase {
+            case .preparing:
+                ZStack {
                     Color(.systemBackground).ignoresSafeArea()
-                        .fullScreenCover(isPresented: $showPledge) {
-                            ConsentPanel(notice: AppConfig.privacyPolicyURL) {
-                                consentSealed = true
-                                showPledge = false
-                                phase = .clear
-                            }
-                        }
-                case .clear:
-                    inner()
+                    ProgressView().scaleEffect(1.4)
                 }
+                .task { await calibrate() }
+            case .shifted(let url):
+                GateFrame(target: url, sterile: false)
+                    .ignoresSafeArea()
+            case .clear:
+                inner()
             }
         }
     }
@@ -43,10 +28,7 @@ struct LaunchScaffold<Inner: View>: View {
         switch verdict {
         case .shifted(let url):
             phase = .shifted(url)
-        case .aligned:
-            phase = .pledging
-            DispatchQueue.main.async { showPledge = true }
-        case .blank:
+        case .aligned, .blank:
             phase = .clear
         }
     }
@@ -54,7 +36,6 @@ struct LaunchScaffold<Inner: View>: View {
     private enum Phase: Equatable {
         case preparing
         case shifted(URL)
-        case pledging
         case clear
     }
 }
