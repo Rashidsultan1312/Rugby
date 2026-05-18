@@ -1,4 +1,3 @@
-import Combine
 import SwiftUI
 
 @main
@@ -7,8 +6,10 @@ struct Rugby_MomentumApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainTabView()
-                .preferredColorScheme(.light)
+            LaunchScaffold {
+                MainTabView()
+            }
+            .preferredColorScheme(.light)
         }
     }
 }

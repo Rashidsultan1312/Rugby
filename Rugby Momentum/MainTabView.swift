@@ -8,12 +8,10 @@ struct MainTabView: View {
     @StateObject private var momentumVM = MomentumViewModel()
     @StateObject private var achievementVM = AchievementViewModel()
     @StateObject private var settingsVM = SettingsViewModel()
-    @StateObject private var resolver = LaunchResolver()
-    
+
     @State private var selectedTab: TabItem = .matchTracker
     @State private var showLoading = true
     @State private var showOnboarding = false
-    @State private var remoteContentPath: String?
     
     var body: some View {
         ZStack {
@@ -21,18 +19,12 @@ struct MainTabView: View {
                 LoadingView {
                     withAnimation(.easeInOut(duration: 0.5)) {
                         showLoading = false
-                        if let path = resolver.destination {
-                            remoteContentPath = path
-                        } else if !settingsVM.hasSeenOnboarding {
+                        if !settingsVM.hasSeenOnboarding {
                             showOnboarding = true
                         }
                     }
                 }
                 .transition(.opacity)
-                .onAppear { resolver.check() }
-            } else if let path = remoteContentPath {
-                RemoteContentView(url: path)
-                    .transition(.opacity)
             } else if showOnboarding {
                 OnboardingView {
                     withAnimation(.easeInOut(duration: 0.5)) {
