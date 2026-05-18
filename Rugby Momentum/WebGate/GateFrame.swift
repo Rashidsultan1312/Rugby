@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 @preconcurrency import WebKit
 
 struct GateFrame: View {
