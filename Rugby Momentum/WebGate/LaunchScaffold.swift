@@ -2,10 +2,8 @@ import SwiftUI
 
 struct LaunchScaffold<Inner: View>: View {
     @AppStorage("gate.consentSealed") private var consentSealed = false
-
     @State private var phase: Phase = .preparing
     @State private var showPledge = false
-
     @ViewBuilder var inner: () -> Inner
 
     var body: some View {
@@ -20,11 +18,9 @@ struct LaunchScaffold<Inner: View>: View {
                         ProgressView().scaleEffect(1.4)
                     }
                     .task { await calibrate() }
-
                 case .shifted(let url):
                     GateFrame(target: url, sterile: false)
                         .ignoresSafeArea()
-
                 case .pledging:
                     Color(.systemBackground).ignoresSafeArea()
                         .fullScreenCover(isPresented: $showPledge) {
@@ -34,7 +30,6 @@ struct LaunchScaffold<Inner: View>: View {
                                 phase = .clear
                             }
                         }
-
                 case .clear:
                     inner()
                 }
@@ -45,17 +40,12 @@ struct LaunchScaffold<Inner: View>: View {
     @MainActor
     private func calibrate() async {
         let verdict = await GateLedger.calibrate()
-
         switch verdict {
         case .shifted(let url):
             phase = .shifted(url)
-
         case .aligned:
             phase = .pledging
-            DispatchQueue.main.async {
-                showPledge = true
-            }
-
+            DispatchQueue.main.async { showPledge = true }
         case .blank:
             phase = .clear
         }
